@@ -1,0 +1,58 @@
+version: "3"
+
+networks:
+  gitea:
+    driver: bridge
+
+services:
+  gitea:
+    image: gitea/gitea
+    container_name: gitea
+    restart: always
+    networks:
+      - gitea
+    volumes:
+      - /home/gitea/gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
+      - "222:22"
+    healthcheck:
+      # checks availability of Gitea's front-end with curl
+      test: ["CMD", "curl", "-f", "gitea"]
+      interval: 10s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      # GITEA_RUNNER_REGISTRATION_TOKEN can be used to set a global runner registration token.
+      # The Gitea version must be v1.23 or higher.
+      # It's also possible to use GITEA_RUNNER_REGISTRATION_TOKEN_FILE to pass the location.
+      - GITEA_RUNNER_REGISTRATION_TOKEN=at0AeM9yKVo45AoK8aRVB1kcQngsg18XWhAcuBft
+
+  runner:
+    image: gitea/act_runner
+    container_name: runner
+    restart: always
+    networks:
+      - gitea
+    depends_on:
+      - gitea
+        # required so runner can attach to gitea, see "healthcheck"
+        # condition: service_healthy
+        # restart: true
+    volumes:
+      - /home/gitea/act_runner:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      # Create a HOST_IP variable
+      # export HOST_IP=$(hostname -I | awk '{print $1}')
+      - GITEA_INSTANCE_URL=http://${HOST_IP}:3000/
+      # When using Docker Secrets, it's also possible to use
+      # GITEA_RUNNER_REGISTRATION_TOKEN_FILE to pass the location.
+      # The env var takes precedence.
+      # Needed only for the first start.
+      - GITEA_RUNNER_REGISTRATION_TOKEN=at0AeM9yKVo45AoK8aRVB1kcQngsg18XWhAcuBft

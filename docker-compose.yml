@@ -41,9 +41,6 @@ services:
       - gitea
     depends_on:
       - gitea
-        # required so runner can attach to gitea, see "healthcheck"
-        # condition: service_healthy
-        # restart: true
     volumes:
       - /home/gitea/act_runner:/data
       - /var/run/docker.sock:/var/run/docker.sock

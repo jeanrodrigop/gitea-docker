@@ -3,7 +3,7 @@
 ## Deploying:
 Clone this repo:
 ```bash
-$ git clone https://github.com/jeanrodrigop/gitea.git
+$ git clone https://github.com/jeanrodrigop/gitea-docker.git
 ```
 Change to cloned repo:
 ```bash
